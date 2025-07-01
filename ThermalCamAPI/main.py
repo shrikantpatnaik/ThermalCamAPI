@@ -9,6 +9,8 @@ from fastapi import FastAPI, Depends, Query, HTTPException, status
 from sqlmodel import SQLModel, create_engine, Session, select
 import datetime
 
+from starlette.middleware.cors import CORSMiddleware
+
 from config import Settings
 from models import APIKeys, CamDataWithoutData, CamData
 
@@ -65,6 +67,13 @@ async def lifespan(api_app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/data", dependencies=[Depends(check_api_key)])
 def read_datas(session: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 100,
